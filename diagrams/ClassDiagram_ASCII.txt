@@ -1,0 +1,100 @@
+CLASS DIAGRAM: PEN DESIGN
+═══════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────┐
+│              <<enum>>                   │
+│            PenState                     │
+├─────────────────────────────────────────┤
+│  • CLOSED                               │
+│  • OPEN                                 │
+│  • IN_USE                               │
+│  • EMPTY                                │
+└─────────────────────────────────────────┘
+          △
+          │ uses
+          │
+┌─────────────────────────────────────────────────────────────┐
+│                      Pen                                     │
+├─────────────────────────────────────────────────────────────┤
+│ Attributes:                                                 │
+│  - brand : String                                           │
+│  - color : String                                           │
+│  - inkCartridge : InkCartridge                              │
+│  - currentState : PenState                                  │
+│  - inkUsagePerWrite : double                                │
+├─────────────────────────────────────────────────────────────┤
+│ Methods:                                                    │
+│  + Pen(brand, color, initialInkCapacity, inkUsagePerWrite) │
+│  + start() : void                                           │
+│  + write(text: String) : void                               │
+│  + close() : void                                           │
+│  + refill() : void                                          │
+│  + getCurrentState() : PenState                             │
+│  + getRemainingInk() : double                               │
+│  + getBrand() : String                                      │
+│  + getColor() : String                                      │
+│  + hasInk() : boolean                                       │
+│  + toString() : String                                      │
+└─────────────────────────────────────────────────────────────┘
+         │
+         │ has *
+         │
+         ▼
+┌──────────────────────────────────────────────┐
+│          InkCartridge                        │
+├──────────────────────────────────────────────┤
+│ Attributes:                                  │
+│  - maxCapacity : double                      │
+│  - currentInk : double                       │
+├──────────────────────────────────────────────┤
+│ Methods:                                     │
+│  + InkCartridge(maxCapacity: double)         │
+│  + consumeInk(amount: double) : void         │
+│  + refill() : void                           │
+│  + hasInk() : boolean                        │
+│  + getRemainingInk() : double                │
+│  + getMaxCapacity() : double                 │
+│  + getCapacityPercentage() : double          │
+│  + toString() : String                       │
+└──────────────────────────────────────────────┘
+
+
+STATE MACHINE DIAGRAM
+═════════════════════════════════════════════════════════════════
+
+                         ┌─────────────┐
+                         │   EMPTY     │
+                         └──────▲──────┘
+                                │
+                    Cannot write │ (refill)
+                                │
+        ┌──────────────────────────────────────────┐
+        │                                          │
+        │    ┌──────────────┐                      │
+        │    │    CLOSED    │ ◄─────────────┐    │
+        │    └──────┬───────┘               │    │
+        │           │ (start)               │    │
+        │           ▼                   (close) │
+        │    ┌──────────────┐               │    │
+        │    │     OPEN     │ ──────────────┘    │
+        │    │              │                    │
+        │    └──────▲───────┘                    │
+        │           │                            │
+        │      (write)                           │
+        │           │                            │
+        │    ┌──────┴───────┐                    │
+        │    │    IN_USE    │                    │
+        │    │  (writing)   │                    │
+        │    └──────────────┘                    │
+        │                                        │
+        └────────────────────────────────────────┘
+
+Transitions:
+  • CLOSED  → OPEN    : start() + hasInk()
+  • OPEN    → IN_USE  : write() + hasInk()
+  • IN_USE  → OPEN    : after write
+  • OPEN    → CLOSED  : close()
+  • IN_USE  → CLOSED  : close()
+  • (any)   → EMPTY   : no ink available
+  • EMPTY   → CLOSED  : refill()
+  • CLOSED  → CLOSED  : refill()

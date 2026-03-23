@@ -1,0 +1,61 @@
+@startuml Pen_ClassDiagram
+
+title Pen Design - Class Diagram
+
+package "Pen System" {
+    
+    class Pen {
+        - brand : String
+        - color : String
+        - inkCartridge : InkCartridge
+        - currentState : PenState
+        - inkUsagePerWrite : double
+        
+        + Pen(brand: String, color: String, initialInkCapacity: double, inkUsagePerWrite: double)
+        + start() : void
+        + write(text: String) : void
+        + close() : void
+        + refill() : void
+        + getCurrentState() : PenState
+        + getRemainingInk() : double
+        + getBrand() : String
+        + getColor() : String
+        + hasInk() : boolean
+        + toString() : String
+    }
+    
+    enum PenState {
+        CLOSED
+        OPEN
+        IN_USE
+        EMPTY
+    }
+    
+    class InkCartridge {
+        - maxCapacity : double
+        - currentInk : double
+        
+        + InkCartridge(maxCapacity: double)
+        + consumeInk(amount: double) : void
+        + refill() : void
+        + hasInk() : boolean
+        + getRemainingInk() : double
+        + getMaxCapacity() : double
+        + getCapacityPercentage() : double
+        + toString() : String
+    }
+    
+    class Main {
+        + {static} main(args: String[]) : void
+        - {static} demonstrateNormalUsage(pen: Pen) : void
+        - {static} demonstrateRefill(pen: Pen) : void
+        - {static} demonstrateErrorHandling(pen: Pen) : void
+    }
+    
+    ' Relationships
+    Pen *-- InkCartridge : has
+    Pen -- PenState : uses
+    Main --> Pen : uses
+}
+
+@enduml
