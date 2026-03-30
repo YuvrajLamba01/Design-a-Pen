@@ -1,116 +1,45 @@
-# Design a Pen - Low-Level Design (LLD)
+# Design a Pen
 
-A complete object-oriented design and implementation of a Pen system demonstrating state management, composition, and error handling principles.
-
-## Overview
-
-The Pen system implements a real-world pen with four core operations:
-- **start()** - Open the pen (CLOSED → OPEN)
-- **write(text)** - Write with the pen (OPEN → IN_USE → OPEN)
-- **close()** - Close the pen (any state → CLOSED)
-- **refill()** - Refill ink cartridge (EMPTY → CLOSED)
+Advanced object-oriented Pen design with modular components and a clean class diagram.
 
 ## Project Structure
 
 ```
 Design-a-Pen/
 ├── src/
-│   ├── Pen.java              # Main pen class with state management
-│   ├── InkCartridge.java     # Ink cartridge management
-│   └── Main.java             # Demo & usage examples
-├── README.md                 # This file
-├── LLD_DESIGN.md            # Complete design documentation
-└── LICENSE                  # MIT License
+│   ├── Pen.java
+│   ├── PenType.java
+│   ├── Refill.java
+│   ├── CapMechanism.java
+│   ├── OperatingMechanism.java
+│   ├── ClickMechanism.java
+│   └── Main.java
+├── ClassDiagram.md
+├── README.md
+└── LICENSE
 ```
 
 ## Quick Start
 
-### Compilation
 ```bash
 cd src
-javac Pen.java InkCartridge.java Main.java
-```
-
-### Run Demo
-```bash
+javac *.java
 java Main
-```
-
-## Basic Usage
-
-```java
-// Create pen with 100 units ink, 10 units per write
-Pen pen = new Pen("Parker", "Blue", 100.0, 10.0);
-
-// Write workflow
-pen.start();                    // Open pen
-pen.write("Hello, World!");     // Write & consume 10 units
-pen.write("Another message");   // Write again
-pen.close();                    // Close pen
-
-// Refill & continue
-pen.refill();                   // Restore ink to full
-pen.start();
-pen.write("After refill");
-pen.close();
 ```
 
 ## Classes
 
-### Pen.java
-- **Attributes**: brand, color, inkCartridge, currentState, inkUsagePerWrite
-- **Methods**: start(), write(), close(), refill(), getters
-- **States**: CLOSED, OPEN, IN_USE, EMPTY
+- `Pen`: Main controller for open, close, click, write, and refill flow.
+- `PenType`: Enum for `BALLPOINT`, `GEL`, `FOUNTAIN`, `MARKER`.
+- `Refill`: Tracks ink capacity and consumption.
+- `CapMechanism`: Controls cap open/close state.
+- `OperatingMechanism`: Interface for writing mechanism behavior.
+- `ClickMechanism`: Click-based implementation of `OperatingMechanism`.
+- `Main`: Demo runner with normal flow, refill flow, and error handling.
 
-### InkCartridge.java
-- **Attributes**: maxCapacity, currentInk
-- **Methods**: consumeInk(), refill(), hasInk(), getters
+## Diagram
 
-### PenState Enum
-- CLOSED: Cap on, cannot write
-- OPEN: Cap off, ready to write
-- IN_USE: Currently writing
-- EMPTY: No ink left
-
-## State Diagram
-
-```
-CLOSED →[start+ink]→ OPEN ←[close]← IN_USE
-                      ↓               ↑
-                   [write]         [write]
-                      
-EMPTY ←[write-noink]— OPEN/IN_USE
-  ↓
-[refill]
-  ↓
-CLOSED
-```
-
-## Error Handling
-
-All invalid operations throw `IllegalStateException`:
-- start() when not CLOSED
-- write() when not OPEN/IN_USE or no ink
-- close() when already CLOSED
-- refill() when OPEN or IN_USE
-
-## Key Design Principles
-
-1. **Encapsulation** - All attributes private
-2. **State Management** - Enum-based state machine
-3. **Composition** - Pen "has-a" InkCartridge
-4. **Fail-Fast** - Exceptions on invalid operations
-5. **Validation** - Pre-condition checks before state changes
-
-## Documentation
-
-See [LLD_DESIGN.md](LLD_DESIGN.md) for:
-- Complete class diagrams (Mermaid)
-- Detailed method specifications
-- Sequence diagrams
-- Design patterns & principles
-- Testing considerations
-- Future enhancements
+See [ClassDiagram.md](ClassDiagram.md) for the complete Mermaid class diagram.
 
 ## Requirements
 
@@ -119,4 +48,4 @@ See [LLD_DESIGN.md](LLD_DESIGN.md) for:
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) file
+MIT License - see [LICENSE](LICENSE).
