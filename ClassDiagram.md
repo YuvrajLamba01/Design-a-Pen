@@ -1,4 +1,4 @@
-# Advanced Pen Design - Class Diagram
+# Pen Design - Class Diagram
 
 ```mermaid
 classDiagram
