@@ -1,118 +1,98 @@
 public class Pen {
-    enum PenState {
-        CLOSED, OPEN, IN_USE, EMPTY
-    }
-    
     private String brand;
-    private String color;
-    private InkCartridge inkCartridge;
-    private PenState currentState;
-    private double inkUsagePerWrite;
+    private PenType penType;
+    private CapMechanism capMechanism;
+    private OperatingMechanism operatingMechanism;
+    private Refill refill;
+    private boolean isClosed;
     
-    public Pen(String brand, String color, double initialInkCapacity, double inkUsagePerWrite) {
+    public Pen(String brand, PenType penType, String capMaterial, String refillColor, 
+               double refillCapacity, double inkUsagePerWrite) {
         this.brand = brand;
-        this.color = color;
-        this.inkCartridge = new InkCartridge(initialInkCapacity);
-        this.currentState = PenState.CLOSED;
-        this.inkUsagePerWrite = inkUsagePerWrite;
+        this.penType = penType;
+        this.capMechanism = new CapMechanism(capMaterial);
+        this.operatingMechanism = new ClickMechanism(inkUsagePerWrite);
+        this.refill = new Refill(refillColor, refillCapacity, penType);
+        this.isClosed = true;
     }
     
-    public void start() throws IllegalStateException {
-        if (currentState == PenState.CLOSED) {
-            if (inkCartridge.hasInk()) {
-                currentState = PenState.OPEN;
-                System.out.println("[" + brand + "] Pen cap removed. Pen is ready to write.");
-            } else {
-                currentState = PenState.EMPTY;
-                System.out.println("[" + brand + "] Pen is out of ink. Please refill before using.");
-                throw new IllegalStateException("Cannot start pen: No ink available");
-            }
-        } else {
-            throw new IllegalStateException("Pen is already open or in use. Close it first.");
+    public void open() throws IllegalStateException {
+        if (!isClosed) {
+            throw new IllegalStateException("Pen is already open");
         }
-    }
-    
-    public void write(String text) throws IllegalStateException {
-        if (currentState != PenState.OPEN && currentState != PenState.IN_USE) {
-            throw new IllegalStateException("Pen is not open. Call start() first.");
-        }
-        
-        if (!inkCartridge.hasInk()) {
-            currentState = PenState.EMPTY;
-            throw new IllegalStateException("No ink left. Call refill() to continue writing.");
-        }
-        
-        // Check if there's enough ink for the write operation
-        if (inkCartridge.getRemainingInk() < inkUsagePerWrite) {
-            currentState = PenState.EMPTY;
-            System.out.println("[" + brand + "] Not enough ink to complete the write. Pen is now empty.");
-            throw new IllegalStateException("Insufficient ink for this write operation");
-        }
-        
-        currentState = PenState.IN_USE;
-        inkCartridge.consumeInk(inkUsagePerWrite);
-        System.out.println("[" + brand + " - " + color + "] Writing: \"" + text + "\"");
-        System.out.println("    Remaining ink: " + String.format("%.2f", inkCartridge.getRemainingInk()) + " units");
-        currentState = PenState.OPEN; // After writing, pen is back to open state
+        capMechanism.open();
+        isClosed = false;
+        System.out.println("[" + brand + "] Cap removed. Pen is open.");
     }
     
     public void close() throws IllegalStateException {
-        if (currentState == PenState.CLOSED) {
-            throw new IllegalStateException("Pen is already closed.");
+        if (isClosed) {
+            throw new IllegalStateException("Pen is already closed");
         }
-        
-        if (currentState == PenState.EMPTY) {
-            currentState = PenState.CLOSED;
-            System.out.println("[" + brand + "] Pen cap placed back. Note: Pen is empty, needs refill.");
-        } else {
-            currentState = PenState.CLOSED;
-            System.out.println("[" + brand + "] Pen cap placed back.");
+        if (operatingMechanism.isActive()) {
+            operatingMechanism.deactivate();
         }
+        capMechanism.close();
+        isClosed = true;
+        System.out.println("[" + brand + "] Cap placed. Pen is closed.");
     }
     
-    public void refill() throws IllegalStateException {
-        if (currentState == PenState.OPEN || currentState == PenState.IN_USE) {
-            throw new IllegalStateException("Cannot refill while pen is open. Close the pen first.");
+    public void click() throws IllegalStateException {
+        if (isClosed) {
+            throw new IllegalStateException("Pen cap must be open first");
         }
-        
-        inkCartridge.refill();
-        currentState = PenState.CLOSED;
-        System.out.println("[" + brand + "] Ink cartridge refilled to full capacity.");
-        System.out.println("    Current ink: " + String.format("%.2f", inkCartridge.getRemainingInk()) + " units");
+        operatingMechanism.activate();
     }
     
-    public PenState getCurrentState() {
-        return currentState;
+    public void unclick() throws IllegalStateException {
+        if (isClosed) {
+            throw new IllegalStateException("Pen cap is closed");
+        }
+        operatingMechanism.deactivate();
     }
     
-    public double getRemainingInk() {
-        return inkCartridge.getRemainingInk();
+    public void write(String text) throws IllegalStateException {
+        if (isClosed) {
+            throw new IllegalStateException("Pen is closed. Call open() first.");
+        }
+        operatingMechanism.write(text, refill);
+    }
+    
+    public void refillPen() throws IllegalStateException {
+        if (!isClosed) {
+            throw new IllegalStateException("Pen must be closed before refilling");
+        }
+        refill.refill();
+        System.out.println("[" + brand + "] Refill completed. Ink: " + String.format("%.2f", refill.getRemainingInk()) + " units");
     }
     
     public String getBrand() {
         return brand;
     }
     
-    public String getColor() {
-        return color;
+    public PenType getPenType() {
+        return penType;
+    }
+    
+    public boolean isClosed() {
+        return isClosed;
     }
     
     public boolean hasInk() {
-        return inkCartridge.hasInk();
+        return refill.hasInk();
     }
     
-    /**
-     * Get information about the pen
-     * 
-     * @return String representation of pen details
-     */
+    public double getRemainingInk() {
+        return refill.getRemainingInk();
+    }
+    
+    public Refill getRefill() {
+        return refill;
+    }
+    
     @Override
     public String toString() {
-        return "Pen{" +
-                "brand='" + brand + '\'' +
-                ", color='" + color + '\'' +
-                ", currentState=" + currentState +
-                ", remainingInk=" + String.format("%.2f", inkCartridge.getRemainingInk()) +
-                '}';
+        return String.format("Pen{brand=%s, type=%s, state=%s, refill=%s}", 
+                           brand, penType.getDescription(), isClosed ? "CLOSED" : "OPEN", refill);
     }
 }
